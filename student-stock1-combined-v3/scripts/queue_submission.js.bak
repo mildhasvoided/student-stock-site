@@ -1,0 +1,19 @@
+import fs from 'fs';
+
+const username = process.env.USERNAME;
+const fileUrl = process.env.FILE_URL;
+const description = process.env.DESCRIPTION || '';
+const date = process.env.DATE || new Date().toISOString().split('T')[0];
+
+if (!username || !fileUrl) {
+  console.error('USERNAME and FILE_URL are required.');
+  process.exit(1);
+}
+
+const payload = { username, fileUrl, description, date };
+
+const path = 'submissions.json';
+const data = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : [];
+data.push(payload);
+fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+console.log('✅ Queued submission for', username, '->', fileUrl);

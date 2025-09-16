@@ -1,0 +1,90 @@
+body {
+    height: 600vh;
+    margin: 0;
+    background: linear-gradient(to bottom, rgb(99, 125, 165), rgb(89, 106, 134), rgb(32, 38, 48));
+    
+}
+
+#return {
+    display: block;
+    margin: 0 auto;
+    /* centered */
+    color: rgb(255, 255, 255);
+    background-color: crimson;
+    border-color: black;
+}
+
+#header {
+    text-align: center;
+}
+
+p {
+    text-align: center;
+}
+
+#intro {
+    text-align: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#intro2 {
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+#skip {
+    display: block;
+    margin: 0 auto;
+    /* centered */
+    text-align: center;
+    text-decoration: none;
+    color: orange;
+}
+
+#start1 {
+    margin-bottom: 60px;
+    text-align: center;
+    margin-top: 1000px;
+}
+
+#ui {
+    text-align: center;
+}
+
+#images {
+    color: white;
+    background-color: red;
+    border-color: crimson;
+    height: 20px;
+    width: 52px;
+}
+
+#gifs {
+    color: black;
+    background-color: grey;
+    border-color: black;
+    height: 20px;
+    width: 50px;
+}
+
+#audio {
+    color: white;
+    background-color: black;
+    border-color: white;
+    height: 20px;
+    width: 50px;
+}
+
+#email {
+    color: white;
+}
+
+/*#aboutme{
+
+}*/
+
+#aboutme-button {
+    color: red;
+    background-color: blanchedalmond;
+    border-color: bisque;
+}

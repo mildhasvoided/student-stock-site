@@ -1,0 +1,99 @@
+const fs = require("fs");
+const path = require("path");
+
+// Files
+const submissionsFile = path.join(__dirname, "../submissions.json");
+const cooldownFile = path.join(__dirname, "../.cooldown");
+const audioFile = path.join(__dirname, "../audio.html");
+const gifsFile = path.join(__dirname, "../gifs.html");
+const imagesFile = path.join(__dirname, "../images.html");
+
+// Cooldown settings
+const COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes
+const IDLE_WAIT_MS = 2 * 60 * 1000; // 2 minutes
+
+function getCooldownTime() {
+  if (fs.existsSync(cooldownFile)) {
+    return parseInt(fs.readFileSync(cooldownFile, "utf8"), 10) || 0;
+  }
+  return 0;
+}
+
+function setCooldownTime() {
+  fs.writeFileSync(cooldownFile, Date.now().toString());
+}
+
+function injectSubmission(htmlFile, block) {
+  if (!fs.existsSync(htmlFile)) return;
+  let html = fs.readFileSync(htmlFile, "utf8");
+
+  // Insert into <div id="submissions">
+  html = html.replace(
+    /(<div[^>]*id=["']submissions["'][^>]*>)/i,
+    `$1\n${block}`
+  );
+
+  fs.writeFileSync(htmlFile, html, "utf8");
+}
+
+async function main() {
+  const now = Date.now();
+  const lastRun = getCooldownTime();
+
+  // Check cooldown
+  if (now - lastRun < COOLDOWN_MS) {
+    console.log("⏳ Cooldown active, skipping this run.");
+    return;
+  }
+
+  // Read submissions
+  let submissions = [];
+  if (fs.existsSync(submissionsFile)) {
+    submissions = JSON.parse(fs.readFileSync(submissionsFile, "utf8"));
+  }
+
+  if (submissions.length === 0) {
+    console.log("⚠️ No submissions found. Waiting 2 minutes before idling...");
+    await new Promise(resolve => setTimeout(resolve, IDLE_WAIT_MS));
+    setCooldownTime(); // Still mark cooldown so we don't hammer commits
+    return;
+  }
+
+  // Process up to 5 submissions
+  const toProcess = submissions.splice(0, 5);
+  console.log(`✅ Processing ${toProcess.length} submissions...`);
+
+  for (const sub of toProcess) {
+    let block = `
+      <div class="submission">
+        <img src="https://github.com/${sub.username}.png" width="40" height="40" alt="pfp">
+        <strong>${sub.username}</strong> - <em>${new Date().toLocaleString()}</em><br>
+        <p>${sub.description || ""}</p>
+    `;
+
+    if (sub.file_url.match(/\.mp3$/i)) {
+      block += `<audio controls src="${sub.file_url}"></audio></div>`;
+      injectSubmission(audioFile, block);
+    } else if (sub.file_url.match(/\.gif$/i)) {
+      block += `<img src="${sub.file_url}" alt="gif submission"></div>`;
+      injectSubmission(gifsFile, block);
+    } else if (sub.file_url.match(/\.(jpe?g|png)$/i)) {
+      block += `<img src="${sub.file_url}" alt="image submission"></div>`;
+      injectSubmission(imagesFile, block);
+    } else {
+      block += `<a href="${sub.file_url}">Download file</a></div>`;
+      injectSubmission(imagesFile, block);
+    }
+  }
+
+  // Save back updated submissions.json
+  fs.writeFileSync(submissionsFile, JSON.stringify(submissions, null, 2));
+
+  // Set cooldown
+  setCooldownTime();
+}
+
+main().catch(err => {
+  console.error("❌ Error in process_queue:", err);
+  process.exit(1);
+});
