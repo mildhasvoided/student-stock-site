@@ -1,4 +1,4 @@
-# student-stock1
+
 
 This is a safe copy of your site (with a `1` suffix). It includes a queued-submission system with GitHub Actions.
 
