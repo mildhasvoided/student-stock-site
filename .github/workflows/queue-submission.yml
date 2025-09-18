@@ -1,0 +1,27 @@
+name: Queue Submission
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "GitHub username"
+        required: true
+      file_url:
+        description: "URL to the uploaded file"
+        required: true
+      description:
+        description: "Submission description"
+        required: false
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/queue_submission.js
+        env:
