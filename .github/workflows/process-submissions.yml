@@ -5,19 +5,32 @@ on:
     - cron: "*/3 * * * *"   # every 3 minutes
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   process:
+    name: "⚡ Process up to 5 submissions"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 🛎️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: node scripts/process_queue.js
-      - name: Commit processed submissions
+
+      - name: 🔄 Run submission processor
         run: |
+          echo "🚀 Processing submissions..."
+          node scripts/process_queue.js
+
+      - name: 💾 Commit processed submissions
+        run: |
+          echo "📦 Saving updated HTML + logs to repo"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add audio.html gifs.html images.html submissions.json submissions_log
-          git commit -m "Process up to 5 submissions"
+          git commit -m "Process up to 5 submissions" || echo "ℹ️ Nothing new to commit"
           git push
