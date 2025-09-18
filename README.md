@@ -9,7 +9,7 @@ go to issues tab and use this format to upload an image!:
 [drag and drop photo here]
 DESCRIPTION (optional)
 
---------------------------------------------------------------------------------|
+
 within 10-15 minutes your submission should appear depending on what you upload:
 images:
 png,jpeg,webp.
@@ -17,4 +17,5 @@ gifs:
 gif,(maybe bmp?).
 audio:
 mp3,mp1.
----------------------------------------------------------------------------------|
+
+and if there are any issues please email me <jtw0044@rfisd.me>
