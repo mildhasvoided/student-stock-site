@@ -4,16 +4,6 @@ on:
   issues:
     types: [opened]
   workflow_dispatch:
-    inputs:
-      username:
-        description: "GitHub username"
-        required: false
-      file_url:
-        description: "URL to the uploaded file"
-        required: false
-      description:
-        description: "Submission description"
-        required: false
 
 permissions:
   issues: read
@@ -21,25 +11,32 @@ permissions:
 
 jobs:
   queue:
+    name: "📥 Queue a new submission"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 🛎️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Run queue_submission.js
-        run: node scripts/queue_submission.js
+      - name: 📝 Parse Issue submission
+        run: |
+          echo "📬 Received submission from: ${{ github.actor }}"
+          echo "📝 Issue body:"
+          echo "${{ github.event.issue.body }}"
+          node scripts/queue_submission.js
         env:
-          USERNAME: ${{ github.event.inputs.username || github.actor }}
-          FILE_URL: ${{ github.event.inputs.file_url }}
-          DESCRIPTION: ${{ github.event.inputs.description }}
+          USERNAME: ${{ github.actor }}
           ISSUE_BODY: ${{ github.event.issue.body }}
 
-      - name: Commit queued submission
+      - name: 💾 Commit queued submission
         run: |
+          echo "📦 Saving queued submission to repo"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add submissions.json submissions_log
-          git commit -m "Queue submission from ${{ github.actor }}" || echo "No changes to commit"
+          git commit -m "Queue submission from ${{ github.actor }}" || echo "ℹ️ Nothing new to commit"
           git push
