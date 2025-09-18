@@ -25,3 +25,14 @@ jobs:
           node-version: '20'
       - run: node scripts/queue_submission.js
         env:
+          USERNAME: ${{ github.event.inputs.username || github.actor }}
+          FILE_URL: ${{ github.event.inputs.file_url }}
+          DESCRIPTION: ${{ github.event.inputs.description }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+      - name: Commit queued submission
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add submissions.json submissions_log
+          git commit -m "Queue submission from ${{ github.actor }}"
+          git push
