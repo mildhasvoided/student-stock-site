@@ -7,13 +7,17 @@ on:
     inputs:
       username:
         description: "GitHub username"
-        required: true
+        required: false
       file_url:
         description: "URL to the uploaded file"
-        required: true
+        required: false
       description:
         description: "Submission description"
         required: false
+
+permissions:
+  issues: read
+  contents: write
 
 jobs:
   queue:
@@ -23,16 +27,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: node scripts/queue_submission.js
+
+      - name: Run queue_submission.js
+        run: node scripts/queue_submission.js
         env:
           USERNAME: ${{ github.event.inputs.username || github.actor }}
           FILE_URL: ${{ github.event.inputs.file_url }}
           DESCRIPTION: ${{ github.event.inputs.description }}
           ISSUE_BODY: ${{ github.event.issue.body }}
+
       - name: Commit queued submission
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add submissions.json submissions_log
-          git commit -m "Queue submission from ${{ github.actor }}"
+          git commit -m "Queue submission from ${{ github.actor }}" || echo "No changes to commit"
           git push
