@@ -2,7 +2,7 @@
 
 
 
-## How it works
+How it works
 
 go to issues tab and use this format to upload an image!:
 (username) [auto date]
