@@ -21,16 +21,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🔄 Run submission processor
+      - name: 🔄 Run process_queue.js
         run: |
           echo "🚀 Processing submissions..."
-          node scripts/process_queue.js
+          node scripts/process_queue.js || { echo "❌ process_queue.js failed"; exit 1; }
 
       - name: 💾 Commit processed submissions
         run: |
           echo "📦 Saving updated HTML + logs to repo"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add audio.html gifs.html images.html submissions.json submissions_log
+          git add audio.html gifs.html images.html submissions.json submissions_log || true
           git commit -m "Process up to 5 submissions" || echo "ℹ️ Nothing new to commit"
           git push
