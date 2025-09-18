@@ -1,31 +1,60 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
+    <link rel="icon" href="data:,">
+    <meta charset="UTF-8">
     <title>placeholder (AGAIN)</title>
-        <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="main.css">
+
+
     <style>
-
-
+        /* Add custom styles here if needed */
     </style>
 </head>
 <body>
 
     <h2 id="header">hi</h2>
-        <a href="index.html"><button id="return">return</button></a><br>
-            <a id="skip" href="#start1">skip to selection</a>
+    <a href="index.html"><button id="return">return</button></a><br>
+    <a id="skip" href="#start1">skip to selection</a>
     <p>
         this site is for uploading stock images and gifs!
     </p>
     <h3 id="intro">we heavily advise against using generative ai for images or gifs.</h3>
-    <h4 id="intro2">this sites whole purpose is to allow you free access to free gifs and images for projects and assignments</h4>
-    <h1 id="start1">where to?</h1>
+    <h4 id="intro2">this site's whole purpose is to allow you free access to free gifs and images for projects and assignments</h4>
+    <span id="intro" style="text-align:center;display:block;">please do not use generative ai on this site the submission will be denied</span>
+    <h1 id="start1" style="text-align:center;display:block;">where to?</h1>
     <div id="ui">
-    <a id="debug"href="images.html"><button id="images">images</button></a>
-    <a href="gifs.html"><button id="gifs">gifs</button></a>
-    <a href="audio.html"><button id="audio">audio</button></a>
+        <a id="debug" href="images.html"><button id="images">images</button></a>
+        <a href="gifs.html"><button id="gifs">gifs</button></a>
+        <a href="audio.html"><button id="audio">audio</button></a>
     </div>
-    <br>
-    
-    <br>
+    <br><br>
     <p id="email">possibly more options coming soon (email me and ask jtw0044@rfisd.me)</p>
+
     <script>
+
+const maxFrame = 134;
+let index = 0;
+
+setInterval(() => {
+  const oldFavicon = document.getElementById("favicon");
+  if (oldFavicon) oldFavicon.remove();
+
+  const newFavicon = document.createElement("link");
+  newFavicon.id = "favicon";
+  newFavicon.rel = "icon";
+  newFavicon.type = "image/png";
+  newFavicon.href = `./images/frames/frame_${index}_delay-0.1s.png?v=${Date.now()}`;
+
+  document.head.appendChild(newFavicon);
+
+  index++;
+  if (index > maxFrame) index = 0;
+}, 100); // 100ms per frame
+
+
 </script>
+
+    </script>
+</body>
+</html>

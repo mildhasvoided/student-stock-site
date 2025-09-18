@@ -5,3 +5,14 @@ body{
 .centered-text{
     text-align:center;
 }
+.centered{
+    text-align:center;
+    display:block;
+    display:flex;
+    
+}
+
+/*@font-face {
+    font-family:;
+    src: url();
+}*/
