@@ -5,6 +5,6 @@
   "description": "Queued submissions site with GitHub Actions batch processing.",
   "scripts": {
     "queue": "node scripts/queue_submission.js",
-    "process": "node scripts/process_queue.js"
+    "process": "node scripts/process_queue.cjs"
   }
 }
