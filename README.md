@@ -29,6 +29,13 @@ npm run process
 - `.github/workflows/queue-submission.yml` – manual dispatch to append to `submissions.json`
 - `.github/workflows/process-submissions.yml` – scheduled (every 3 min) or manual to process up to 5
 
+Note about .js vs .cjs
+----------------------
+
+This repository sets `"type": "module"` in `package.json`, which makes Node treat `.js` files as ES modules. A couple of scripts in `scripts/` use CommonJS `require()` and therefore must use the `.cjs` extension (for example `scripts/process_queue.cjs`). Other scripts that are written as ESM use `.js` and `import` (for example `scripts/queue_submission.js`).
+
+If you edit or add scripts, keep this rule in mind to avoid runtime errors like `ReferenceError: require is not defined in ES module scope`.
+
 ## Notes
 
 - If `audio.html`, `gifs.html`, or `images.html` didn’t exist, they were created with a placeholder.
