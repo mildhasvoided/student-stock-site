@@ -1,0 +1,23 @@
+name: Process Submission Queue
+
+on:
+  schedule:
+    - cron: "*/3 * * * *"   # every 3 minutes
+  workflow_dispatch: {}
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/process_queue.js
+      - name: Commit processed submissions
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add audio.html gifs.html images.html submissions.json submissions_log
+          git commit -m "Process up to 5 submissions"
+          git push
