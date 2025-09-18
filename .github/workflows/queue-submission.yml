@@ -32,19 +32,28 @@ jobs:
         with:
           node-version: '20'
 
+      # Run when triggered by an Issue
       - name: 📝 Parse Issue submission
+        if: github.event_name == 'issues'
         run: |
           echo "📬 Received submission from: ${{ github.actor }}"
           echo "📝 Issue body:"
           echo "${{ github.event.issue.body }}"
           node scripts/queue_submission.js
         env:
-          # If triggered manually, these inputs are passed
+          USERNAME: ${{ github.actor }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+
+      # Run when triggered manually
+      - name: 📝 Parse Manual submission
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "📬 Manual submission from: ${{ github.event.inputs.username }}"
+          node scripts/queue_submission.js
+        env:
           USERNAME: ${{ github.event.inputs.username }}
           FILE_URL: ${{ github.event.inputs.file_url }}
           DESCRIPTION: ${{ github.event.inputs.description }}
-          # If triggered by an Issue, this variable is populated
-          ISSUE_BODY: ${{ github.event.issue.body }}
 
       - name: 💾 Commit queued submission
         run: |
