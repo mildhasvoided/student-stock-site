@@ -33,10 +33,12 @@ function parseIssueBody(body) {
   if (lines.length < 2) return null;
 
   // Line 1: (username) [date]
-  const nameMatch = lines[0].match(/^\(([^)]+)\)\s*\[(.+)\]$/);
+  // Line 1 must be exactly: (username) [auto date (dont touch this)]
+  const nameMatch = lines[0].match(/^\(([^)]+)\)\s*\[\s*auto date \(dont touch this\)\s*\]$/i);
   if (!nameMatch) return null;
   const name = nameMatch[1].trim();
-  const date = nameMatch[2].trim();
+  // Date is automatically recorded by the system; ignore any provided date text.
+  const date = new Date().toISOString();
 
   // Line 2: file url or markdown image
   let fileLine = lines[1];

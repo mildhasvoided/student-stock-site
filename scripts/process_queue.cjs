@@ -63,31 +63,20 @@ function chooseTargetByUrl(fileUrl) {
 }
 
 function buildHtmlSnippet(sub) {
-  const username = sub.username || "unknown";
+  // New preset template requested by the user.
+  // Use the submission `name` (or username fallback) as the container id.
+  const nameId = (sub.name || sub.username || "submission").replace(/[^a-zA-Z0-9_-]/g, "-");
   const fileUrl = sub.file_url || sub.url || "";
-  const desc = sub.description || "";
-  const now = new Date().toLocaleString();
-  const pfp = `https://github.com/${username}.png`;
+  const desc = (sub.description || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const isAudio = fileUrl.toLowerCase().endsWith(".mp3");
-  const mediaHtml = isAudio
-    ? `<audio class="submission-media" controls preload="none"><source src="${fileUrl}"></audio>`
-    : `<img class="submission-media" src="${fileUrl}" alt="${desc.replace(/"/g, "&quot;")}" />`;
-
+  // Simple markup: container with id, image, description paragraph and download button.
+  // The download button links to the file and uses the `download` attribute where supported.
   return `
-  <div class="submission">
-    <div class="submission-top">
-      <img class="submission-pfp" src="${pfp}" alt="${username}'s avatar" width="40" height="40" />
-      <div class="submission-meta">
-        <strong class="submission-name">${username}</strong>
-        <span class="submission-date">${now}</span>
-      </div>
-    </div>
-    <div class="submission-body">
-      ${mediaHtml}
-      <p class="submission-desc">${desc.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
-    </div>
-  </div>
+<div id="${nameId}">
+  <img src="${fileUrl}" alt="${desc.replace(/\"/g, '&quot;')}" />
+  <p>${desc}</p>
+  <a href="${fileUrl}" download><button type="button">download</button></a>
+</div>
 `;
 }
 
