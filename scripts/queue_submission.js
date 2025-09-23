@@ -111,6 +111,31 @@ function main() {
     submissions.push(newSubmission);
     fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(submissions, null, 2), 'utf8');
     console.log('✅ Queued submission for:', newSubmission.username, newSubmission.file_url);
+
+    // Also append this submission to a consolidated `submissions.txt` in the repo root
+    try {
+        const OUT_TXT = path.join(REPO_ROOT, 'submissions.txt');
+        const esc = s => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeName = (newSubmission.name || newSubmission.username || 'submission').replace(/[^a-zA-Z0-9_-]/g, '-');
+        const snippet = `\n<div id="${safeName}">\n  <img src="${newSubmission.file_url}" alt="${esc(newSubmission.description)}" />\n  <p>${esc(newSubmission.description)}</p>\n  <a href="${newSubmission.file_url}" download><button type="button">download</button></a>\n</div>\n`;
+        const block = [
+            '----',
+            `username: ${newSubmission.username}`,
+            `name: ${newSubmission.name}`,
+            `date: ${newSubmission.date}`,
+            `file_url: ${newSubmission.file_url}`,
+            `description: ${newSubmission.description || ''}`,
+            '',
+            'HTML snippet (paste this into your target page):',
+            snippet,
+            '----',
+            ''
+        ].join('\n');
+        fs.appendFileSync(OUT_TXT, block, 'utf8');
+        console.log('📝 Appended submission to submissions.txt:', OUT_TXT);
+    } catch (err) {
+        console.warn('Could not append to submissions.txt:', err.message);
+    }
 }
 
 if (process.argv[1] && process.argv[1].endsWith('queue_submission.js')) {
