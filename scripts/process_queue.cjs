@@ -12,6 +12,8 @@ const path = require("path");
 
 const REPO_ROOT = path.join(__dirname, "..");
 const SUBMISSIONS_FILE = path.join(REPO_ROOT, "submissions.json");
+const LOG_DIR = path.join(REPO_ROOT, "submissions_log");
+const PROCESSED_DIR = path.join(LOG_DIR, "processed");
 const COOLDOWN_FILE = path.join(REPO_ROOT, ".cooldown");
 const COOLDOWN_MS = 3 * 60 * 1000; // 3 minutes
 const IDLE_WAIT_MS = 2 * 60 * 1000; // 2 minutes
@@ -86,13 +88,27 @@ function insertIntoHtmlAtTop(htmlPath, snippet) {
     return false;
   }
   let html = fs.readFileSync(htmlPath, "utf8");
-  const openDivRegex = /<div\s+[^>]*id=["']submissions["'][^>]*>/i;
-  const m = html.match(openDivRegex);
-  if (!m) {
-    console.warn("No <div id=\"submissions\"> found in", htmlPath);
-    return false;
+  // Prefer <div id="submissions">, fall back to <div id="content">, otherwise insert before </body>
+  const submissionsRegex = /<div\s+[^>]*id=["']submissions["'][^>]*>/i;
+  const contentRegex = /<div\s+[^>]*id=["']content["'][^>]*>/i;
+  let m = html.match(submissionsRegex);
+  let insertPos;
+  if (m) {
+    insertPos = m.index + m[0].length;
+  } else {
+    m = html.match(contentRegex);
+    if (m) {
+      insertPos = m.index + m[0].length;
+    } else {
+      // final fallback: before </body>
+      const bodyClose = html.match(/<\/body>/i);
+      if (!bodyClose) {
+        console.warn("No suitable insertion point found in", htmlPath);
+        return false;
+      }
+      insertPos = bodyClose.index;
+    }
   }
-  const insertPos = m.index + m[0].length;
   const newHtml = html.slice(0, insertPos) + "\n" + snippet + "\n" + html.slice(insertPos);
   fs.writeFileSync(htmlPath, newHtml, "utf8");
   return true;
@@ -130,15 +146,64 @@ async function main() {
 
   for (const sub of toProcess) {
     const fileUrl = sub.file_url || sub.url || "";
-    const target = chooseTargetByUrl(fileUrl);
+    // prepare debug info
+    const debug = {
+      username: sub.username || 'unknown',
+      name: sub.name || sub.username || null,
+      fileUrl,
+      decidedTarget: null,
+      targetPath: null,
+      targetExists: false,
+      inserted: false,
+      snippetPreview: null,
+      timestamp: new Date().toISOString()
+    };
+
+    // primary detection
+    let target = chooseTargetByUrl(fileUrl);
+    // fallback: look for a known extension anywhere before query/hash
+    if (!target) {
+      const found = (fileUrl || '').match(/\.(jpg|jpeg|png|webp|gif|mp3)(?:$|[?#])/i);
+      if (found) {
+        target = TARGET_MAP[found[1].toLowerCase()];
+      }
+    }
+
+    debug.decidedTarget = target || null;
     if (!target) {
       console.warn("Could not determine target for submission, skipping:", fileUrl);
+      // ensure processed dir exists and write debug
+      try {
+        if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
+        if (!fs.existsSync(PROCESSED_DIR)) fs.mkdirSync(PROCESSED_DIR);
+        const dname = `${Date.now()}-${debug.username}.json`;
+        fs.writeFileSync(path.join(PROCESSED_DIR, dname), JSON.stringify(debug, null, 2), 'utf8');
+      } catch (err) {
+        console.warn('Could not write debug file:', err.message);
+      }
       continue;
     }
+
     const targetPath = path.join(REPO_ROOT, target);
+    debug.targetPath = targetPath;
+    debug.targetExists = fs.existsSync(targetPath);
+
     const snippet = buildHtmlSnippet(sub);
+    debug.snippetPreview = snippet.trim().split('\n').slice(0, 6).join('\n');
+
     const ok = insertIntoHtmlAtTop(targetPath, snippet);
-    console.log(`${ok ? "Inserted into" : "Failed to insert into"} ${target}`);
+    debug.inserted = !!ok;
+    console.log(`${ok ? "Inserted into" : "Failed to insert into"} ${target} (path: ${targetPath})`);
+
+    // write debug info
+    try {
+      if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
+      if (!fs.existsSync(PROCESSED_DIR)) fs.mkdirSync(PROCESSED_DIR);
+      const dname = `${Date.now()}-${debug.username}.json`;
+      fs.writeFileSync(path.join(PROCESSED_DIR, dname), JSON.stringify(debug, null, 2), 'utf8');
+    } catch (err) {
+      console.warn('Could not write processed debug file:', err.message);
+    }
   }
 
   try {
