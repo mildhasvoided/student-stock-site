@@ -1,0 +1,17 @@
+/* Responsive audio and images for submissions */
+#submissions img,
+#content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#submissions audio,
+#content audio {
+    width: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

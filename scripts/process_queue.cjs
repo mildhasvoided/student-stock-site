@@ -71,11 +71,16 @@ function buildHtmlSnippet(sub) {
   const fileUrl = sub.file_url || sub.url || "";
   const desc = (sub.description || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  // Simple markup: container with id, image, description paragraph and download button.
-  // The download button links to the file and uses the `download` attribute where supported.
+  // Determine media type to use appropriate element (audio for mp3, img otherwise)
+  const isAudio = (fileUrl || "").toLowerCase().match(/\.(mp3)(?:$|[?#])/i);
+  const mediaHtml = isAudio
+    ? `<audio controls preload="none"><source src="${fileUrl}"></audio>`
+    : `<img src="${fileUrl}" alt="${desc.replace(/\"/g, '&quot;')}" />`;
+
+  // Minimal, non-invasive markup: sanitized id, media element, description, and a download link.
   return `
 <div id="${nameId}">
-  <img src="${fileUrl}" alt="${desc.replace(/\"/g, '&quot;')}" />
+  ${mediaHtml}
   <p>${desc}</p>
   <a href="${fileUrl}" download><button type="button">download</button></a>
 </div>
@@ -92,24 +97,28 @@ function insertIntoHtmlAtTop(htmlPath, snippet) {
   const submissionsRegex = /<div\s+[^>]*id=["']submissions["'][^>]*>/i;
   const contentRegex = /<div\s+[^>]*id=["']content["'][^>]*>/i;
   let m = html.match(submissionsRegex);
-  let insertPos;
+  let newHtml;
   if (m) {
-    insertPos = m.index + m[0].length;
+    const insertPos = m.index + m[0].length;
+    newHtml = html.slice(0, insertPos) + "\n" + snippet + "\n" + html.slice(insertPos);
   } else {
     m = html.match(contentRegex);
     if (m) {
-      insertPos = m.index + m[0].length;
+      const insertPos = m.index + m[0].length;
+      newHtml = html.slice(0, insertPos) + "\n" + snippet + "\n" + html.slice(insertPos);
     } else {
-      // final fallback: before </body>
+      // final fallback: create a <div id="submissions"> before </body> and insert the snippet inside it
       const bodyClose = html.match(/<\/body>/i);
       if (!bodyClose) {
         console.warn("No suitable insertion point found in", htmlPath);
         return false;
       }
-      insertPos = bodyClose.index;
+      const before = html.slice(0, bodyClose.index);
+      const after = html.slice(bodyClose.index);
+      const wrapper = `\n<div id="submissions">\n${snippet}\n</div>\n`;
+      newHtml = before + wrapper + after;
     }
   }
-  const newHtml = html.slice(0, insertPos) + "\n" + snippet + "\n" + html.slice(insertPos);
   fs.writeFileSync(htmlPath, newHtml, "utf8");
   return true;
 }

@@ -1,18 +1,38 @@
-body{
-    background-color:red;
-    text-align:center;
+body {
+    background-color: red;
+    text-align: center;
 }
-.centered-text{
-    text-align:center;
+
+.centered-text {
+    text-align: center;
 }
-.centered{
-    text-align:center;
-    display:block;
-    display:flex;
-    
+
+.centered {
+    text-align: center;
+    display: block;
+    display: flex;
+
 }
 
 /*@font-face {
     font-family:;
     src: url();
 }*/
+
+/* Ensure inserted images/audio are responsive */
+#submissions img,
+#content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#submissions audio,
+#content audio {
+    width: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
